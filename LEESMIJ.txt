@@ -1,4 +1,4 @@
-BANKWACHT 2.2.0 — bestanden voor GitHub Pages
+BANKWACHT 2.2.1 — bestanden voor GitHub Pages
 =============================================
 
 Zet alle onderstaande bestanden in de hoofdmap van je repository en
@@ -12,15 +12,17 @@ vervang de bestaande versies.
   icon-192.png            icoon voor Android
   icon-512.png            icoon voor Android
 
-Na het uploaden: wacht een minuut en ververs de pagina twee keer.
-De iconen zijn niet veranderd sinds 2.1.0.
+NA HET UPLOADEN
+---------------
+1. Wacht een minuut en ververs de pagina twee keer.
+2. HET ICOON IS VERANDERD. Verwijder het oude icoon van je beginscherm
+   en zet het opnieuw, anders blijf je het oude zien.
+
+VERSIE 2.2.1
+------------
+- Nieuw stickicoon: dikke gekrulde kop linksonder, schacht die naar
+  rechtsboven loopt, met een greepband op de schacht
 
 VERSIE 2.2.0
 ------------
-- Namen aanpassen door erop te tikken:
-  * titel van het seizoensscherm  -> team en seizoen
-  * titel van het wedstrijdscherm -> team en tegenstander
-  * titel van het overzicht       -> team en tegenstander
-  * seizoen in de lijst, in wijzigmodus -> team en seizoen
-  * speler aantikken -> voornaam en achternaam
-- "de Dragons" is nu "KHC Dragons"
+- Namen aanpassen door op de titels en op een speler te tikken
