@@ -1,25 +1,26 @@
-BANKWACHT 2.0.0 — bestanden voor GitHub Pages
+BANKWACHT 2.2.0 — bestanden voor GitHub Pages
 =============================================
 
-Zet ALLE onderstaande bestanden samen in de hoofdmap van je repository
-(dezelfde map waar index.html nu al staat):
+Zet alle onderstaande bestanden in de hoofdmap van je repository en
+vervang de bestaande versies.
 
   index.html              de app zelf
-  sw.js                   zorgt dat de app ook werkt zonder internet
+  sw.js                   laat de app werken zonder internet
   manifest.webmanifest    naam en icoon voor Android
   apple-touch-icon.png    icoon voor het beginscherm op iPhone
   favicon-64.png          icoon in het browsertabblad
   icon-192.png            icoon voor Android
   icon-512.png            icoon voor Android
 
-Vervang de bestaande index.html door deze nieuwe versie.
+Na het uploaden: wacht een minuut en ververs de pagina twee keer.
+De iconen zijn niet veranderd sinds 2.1.0.
 
-NA HET UPLOADEN
----------------
-1. Wacht een minuut; GitHub Pages heeft even nodig.
-2. Open https://bartvanherck79.github.io/Bankwacht/ en ververs de pagina.
-3. Verwijder eventueel het oude icoon van je beginscherm en zet het opnieuw,
-   zodat het hockeystick-icoon en de juiste naam verschijnen.
-
-Je bestaande seizoenen en wedstrijden blijven staan: die horen bij het adres,
-niet bij het bestand. De app zet ze automatisch om naar het nieuwe formaat.
+VERSIE 2.2.0
+------------
+- Namen aanpassen door erop te tikken:
+  * titel van het seizoensscherm  -> team en seizoen
+  * titel van het wedstrijdscherm -> team en tegenstander
+  * titel van het overzicht       -> team en tegenstander
+  * seizoen in de lijst, in wijzigmodus -> team en seizoen
+  * speler aantikken -> voornaam en achternaam
+- "de Dragons" is nu "KHC Dragons"

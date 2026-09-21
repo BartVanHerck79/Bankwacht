@@ -1,5 +1,5 @@
 /* Bankwacht service worker — netwerk eerst, cache als terugval */
-const CACHE = "bankwacht-2.0.0";
+const CACHE = "bankwacht-2.2.0";
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest",
   "./apple-touch-icon.png", "./favicon-64.png", "./icon-192.png", "./icon-512.png"];
 

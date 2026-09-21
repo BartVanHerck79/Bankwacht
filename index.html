@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230B69C7'/%3E%3Cpath d='M70.5 15.5 L43.5 57.5 Q31.5 83.5 65.5 80' fill='none' stroke='%23fff' stroke-width='11' stroke-linecap='round'/%3E%3Ccircle cx='80.5' cy='80' r='8.8' fill='%23FFBE3C'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230B69C7'/%3E%3Cg fill='none' stroke='%23fff' stroke-linecap='round'%3E%3Cpath d='M84.5 18.5 L46.1 58.3' stroke-width='10'/%3E%3Cpath d='M46.1 58.3 A14.5 14.5 0 1 1 24.2 54.4' stroke-width='13'/%3E%3C/g%3E%3C/svg%3E">
 <style>
 :root{
   --bg:#F2F2F7; --surface:#FFFFFF; --fill:#EFEFF4;
@@ -64,6 +64,8 @@ button{background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-c
 .nav-btn:active{background:var(--fill)}
 .nav-btn.txt{padding:0 10px;font-size:17px}
 .nav-title{flex:1;text-align:center;font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+button.nav-title{display:block;min-width:0;padding:2px 4px;border-radius:9px}
+button.nav-title:active{background:var(--fill)}
 .nav-sub{display:block;font-size:12px;font-weight:400;color:var(--text2);letter-spacing:0}
 main{flex:1 1 auto;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:26px}
 main.no-scroll{overflow:hidden;padding-bottom:0;display:flex;flex-direction:column}
@@ -152,8 +154,9 @@ button.row:active{background:var(--fill)}
 .chip.sus.c-geel{background:var(--cy-soft);border-color:var(--cy)}
 .chip.sus.c-geel b,.chip.sus.c-geel .tt{color:var(--cy);font-weight:700}
 .chip.ready{background:var(--tint-soft);border-color:var(--tint);animation:puls 1.1s ease-in-out infinite}
+.pl.field.ready{border-color:var(--tint);animation:puls 1.1s ease-in-out infinite}
 @keyframes puls{0%,100%{opacity:1}50%{opacity:.55}}
-@media (prefers-reduced-motion:reduce){.chip.ready{animation:none}}
+@media (prefers-reduced-motion:reduce){.chip.ready,.pl.field.ready{animation:none}}
 .chip-empty{font-size:12.5px;color:var(--text3);padding:10px 2px}
 
 .dock{flex:0 0 auto;background:color-mix(in srgb, var(--surface) 92%, transparent);
@@ -214,9 +217,9 @@ table.st tr:last-child td{border-bottom:0}
 "use strict";
 /* ===========================================================
    Bankwacht — speeltijd en banktijd bij hockey
-   Gemaakt voor Anneliese van de Dragons
+   Gemaakt voor Anneliese van KHC Dragons
    =========================================================== */
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.2.0";
 const DATA_VERSION = 2;
 const KEY = "bankwacht.v1";
 
@@ -487,7 +490,11 @@ function render(){
      summary:renderSummary, seasonstats:renderSeasonStats }[VIEW] || renderHome)();
 }
 function nav(h){ $("#nav").innerHTML = h; }
-function navTitle(t, sub){ return '<div class="nav-title">'+esc(t)+(sub?'<span class="nav-sub">'+esc(sub)+'</span>':'')+'</div>'; }
+function navTitle(t, sub, act){
+  const inner = esc(t) + (sub ? '<span class="nav-sub">'+esc(sub)+'</span>' : '');
+  return act ? '<button class="nav-title" onclick="'+act+'">'+inner+'</button>'
+             : '<div class="nav-title">'+inner+'</div>';
+}
 function backBtn(v){ return '<button class="nav-btn" onclick="go(\''+v+'\')">'+svg.back+'</button>'; }
 function menuBtn(){ return '<button class="nav-btn" onclick="openMenu()" aria-label="Menu">'+svg.menu+'</button>'; }
 
@@ -515,10 +522,10 @@ function about(){
     '<p>Tik op een speler om te wisselen, een kaart te geven of de naam aan te passen. Alle tijden lopen op de wedstrijdklok: staat de klok stil, dan staan speeltijd en banktijd ook stil.</p>'+
     '<p>Op elke spelerkaart zie je de totale veldtijd (blauw) en de totale banktijd (oranje) van deze wedstrijd. Zit iemand nu op de bank, dan staat eronder hoelang die er deze keer al zit. Rechtsonder op de kaart staat het aantal wissels, en een groen bolletje bij het rugnummer toont gemaakte doelpunten.</p>'+
     '<p>In de balk onderaan zie je iedereen op de bank met de tijd van deze bankbeurt.</p>'+
-    '<p>Een groene kaart staat op 2 minuten, een gele op 5. De strafbank krijgt de kleur van de kaart. Loopt de straf af, dan trilt en piept de telefoon en komt de speler blauw gemarkeerd op de bank: je brengt hem of haar zelf weer in.</p>'+
+    '<p>Een groene kaart staat op 2 minuten, een gele op 5. De strafbank krijgt de kleur van de kaart. Loopt de straf af, dan trilt en piept de telefoon en gaat de speler automatisch terug het veld in, even blauw gemarkeerd. Wil je dat niet, tik de speler dan aan en zet hem of haar op de bank.</p>'+
     '<p>Maak na elke wedstrijd even een back-up via het menu, dan kan je nooit iets kwijtraken.</p>'+
     '<p style="color:var(--text2);border-top:.5px solid var(--sep);padding-top:12px;margin-top:16px">'+
-    'Deze app is speciaal gemaakt voor Anneliese van de Dragons.</p>'+
+    'Deze app is speciaal gemaakt voor Anneliese van KHC Dragons.</p>'+
     '<div class="ver">Bankwacht '+APP_VERSION+'</div></div>');
 }
 
@@ -535,7 +542,7 @@ function renderHome(){
     S.seasons.forEach(s=>{
       h += '<div class="row" style="padding-right:8px">'+
         (homeEdit ? '<button onclick="askDelSeason(\''+s.id+'\')" style="color:#fff;background:var(--danger);width:28px;height:28px;border-radius:99px;font-weight:700;flex:0 0 28px">−</button>' : '')+
-        '<button style="flex:1;display:flex;align-items:center;text-align:left;gap:12px" onclick="openSeason(\''+s.id+'\')">'+
+        '<button style="flex:1;display:flex;align-items:center;text-align:left;gap:12px" onclick="'+(homeEdit?'editSeasonName':'openSeason')+'(\''+s.id+'\')">'+
         '<span style="flex:1;min-width:0"><span style="display:block" class="t">'+esc(s.team)+'</span>'+
         '<span class="s" style="display:block">'+esc(s.name)+' · '+s.matches.length+' wedstrijd'+(s.matches.length===1?"":"en")+'</span></span>'+
         (s.id===S.activeSeason?'<span class="v" style="color:var(--tint);font-weight:600">actief</span>':'')+
@@ -559,10 +566,118 @@ function askSeason(){
         const fire = ()=>{
           const team = t.value.trim(), nm = mo.querySelector("#sName").value.trim();
           if(!team){ t.focus(); toast("Geef een teamnaam"); return; }
-          newSeason(nm || String(yr), team); closeModal(); go("season");
+          const s = newSeason(nm || String(yr), team);
+          closeModal(true);
+          carryStart(s.id);
         };
         mo.querySelector("#sGo").onclick = fire;
         t.addEventListener("keydown", e=>{ if(e.key === "Enter") fire(); });
+      }});
+}
+let carrySel = null;
+function carryStart(newId){
+  const others = S.seasons.filter(s=> s.id !== newId && Object.keys(s.roster||{}).length);
+  if(!others.length){ go("season"); return; }
+  if(others.length === 1){ carrySheet(newId, others[0].id); return; }
+  let h = '<p class="muted">Uit welk seizoen wil je spelers overnemen?</p><div class="card">';
+  others.forEach(s=>{
+    h += '<button class="opt" onclick="carrySheet(\''+newId+'\',\''+s.id+'\')"><span style="flex:1">'+
+      '<span style="display:block">'+esc(s.team)+'</span>'+
+      '<span style="display:block;font-size:13px;color:var(--text2)">'+esc(s.name)+' · '+Object.keys(s.roster).length+' spelers</span></span>'+
+      '<span class="chev">'+svg.chev+'</span></button>';
+  });
+  h += '</div><div class="pad"><button class="btn ghost" onclick="closeModal();go(\'season\')">Leeg beginnen</button></div>';
+  openModal("Spelers overnemen", h);
+}
+function carrySheet(newId, srcId){
+  const src = S.seasons.find(s=>s.id===srcId);
+  if(!src){ go("season"); return; }
+  const ns = Object.keys(src.roster).sort((a,b)=>a-b);
+  carrySel = new Set(ns);
+  let h = '<p class="muted">Kies wie mee overgaat naar het nieuwe seizoen. Je kan later altijd nummers bijzetten.</p>';
+  h += '<div class="pad" style="padding-bottom:8px;display:flex;gap:8px">'+
+       '<button class="btn ghost" id="cAll" style="height:40px;font-size:15px">Allemaal</button>'+
+       '<button class="btn ghost" id="cNone" style="height:40px;font-size:15px">Geen</button></div>';
+  h += '<div class="card">';
+  ns.forEach(n=>{
+    const r = src.roster[n] || {};
+    h += '<button class="opt" data-n="'+esc(n)+'" style="background:var(--tint-soft)">'+
+      '<span class="badge num">'+esc(n)+'</span>'+
+      '<span style="flex:1">'+esc(((r.f||"") + " " + (r.l||"")).trim() || "geen naam")+'</span>'+
+      '<span class="mk" style="color:var(--tint);font-weight:700;font-size:18px;width:20px;text-align:center">✓</span></button>';
+  });
+  h += '</div><div class="pad"><button class="btn" id="cGo"></button></div>'+
+       '<div class="pad" style="padding-top:0"><button class="btn ghost" onclick="closeModal();go(\'season\')">Leeg beginnen</button></div>';
+  openModal("Spelers overnemen", h, { onMount(mo){
+    const upd = ()=>{
+      mo.querySelector("#cGo").textContent = carrySel.size
+        ? carrySel.size + " speler" + (carrySel.size===1?"":"s") + " overnemen"
+        : "Niemand overnemen";
+      mo.querySelectorAll("[data-n]").forEach(el=>{
+        const on = carrySel.has(el.dataset.n);
+        el.style.background = on ? "var(--tint-soft)" : "var(--surface)";
+        el.querySelector(".mk").textContent = on ? "✓" : "";
+      });
+    };
+    mo.querySelectorAll("[data-n]").forEach(el=> el.onclick = ()=>{
+      const n = el.dataset.n;
+      if(carrySel.has(n)) carrySel.delete(n); else carrySel.add(n);
+      upd();
+    });
+    mo.querySelector("#cAll").onclick  = ()=>{ ns.forEach(n=>carrySel.add(n)); upd(); };
+    mo.querySelector("#cNone").onclick = ()=>{ carrySel.clear(); upd(); };
+    mo.querySelector("#cGo").onclick   = ()=> carryDo(newId, srcId);
+    upd();
+  }});
+}
+function carryDo(newId, srcId){
+  const dst = S.seasons.find(s=>s.id===newId), src = S.seasons.find(s=>s.id===srcId);
+  let k = 0;
+  if(dst && src){
+    carrySel.forEach(n=>{ const r = src.roster[n]; if(r){ dst.roster[n] = { f:r.f||"", l:r.l||"" }; k++; } });
+  }
+  save(true); closeModal(); go("season");
+  if(k) toast(k + " speler" + (k===1?"":"s") + " overgenomen");
+}
+function editSeasonName(id){
+  const s = S.seasons.find(x=>x.id===id); if(!s) return;
+  openModal("Naam aanpassen",
+    '<div class="card"><div class="row"><label class="lbl" for="eTeam">Team</label>'+
+    '<input type="text" id="eTeam" value="'+esc(s.team)+'" autocomplete="off"></div>'+
+    '<div class="row"><label class="lbl" for="eSeas">Seizoen</label>'+
+    '<input type="text" id="eSeas" value="'+esc(s.name)+'" autocomplete="off"></div></div>'+
+    '<div class="pad"><button class="btn" id="eGo">Bewaren</button></div>',
+    { onMount(mo){
+        const a = mo.querySelector("#eTeam"), b = mo.querySelector("#eSeas");
+        const fire = ()=>{
+          const t = a.value.trim();
+          if(!t){ a.focus(); toast("Geef een teamnaam"); return; }
+          s.team = t; s.name = b.value.trim() || s.name;
+          save(true); closeModal(); render();
+        };
+        mo.querySelector("#eGo").onclick = fire;
+        [a,b].forEach(el=> el.addEventListener("keydown", e=>{ if(e.key==="Enter") fire(); }));
+      }});
+}
+function editMatchNames(){
+  const m = match(), se = season(); if(!m || !se) return;
+  openModal("Naam aanpassen",
+    '<div class="card"><div class="row"><label class="lbl" for="mTeam">Team</label>'+
+    '<input type="text" id="mTeam" value="'+esc(se.team)+'" autocomplete="off"></div>'+
+    '<div class="row"><label class="lbl" for="mOpp">Tegenstander</label>'+
+    '<input type="text" id="mOpp" value="'+esc(m.opponent||"")+'" autocomplete="off"></div></div>'+
+    '<p class="muted">De teamnaam geldt voor het hele seizoen, de tegenstander enkel voor deze wedstrijd.</p>'+
+    '<div class="pad"><button class="btn" id="mGo">Bewaren</button></div>',
+    { onMount(mo){
+        const a = mo.querySelector("#mTeam"), b = mo.querySelector("#mOpp");
+        const fire = ()=>{
+          const t = a.value.trim();
+          if(!t){ a.focus(); toast("Geef een teamnaam"); return; }
+          se.team = t; m.opponent = b.value.trim();
+          save(true); closeModal(); render();
+        };
+        mo.querySelector("#mGo").onclick = fire;
+        [a,b].forEach(el=> el.addEventListener("keydown", e=>{ if(e.key==="Enter") fire(); }));
       }});
 }
 function askDelSeason(id){
@@ -583,7 +698,7 @@ function delSeason(id){
 let seasonEdit = false;
 function renderSeason(){
   const se = season(); if(!se) return go("home");
-  nav(menuBtn() + navTitle(se.team, se.name) +
+  nav(menuBtn() + navTitle(se.team, se.name, "editSeasonName('"+se.id+"')") +
       (se.matches.length ? '<button class="nav-btn txt" onclick="seasonEdit=!seasonEdit;renderSeason()">'+(seasonEdit?"Klaar":"Wijzig")+'</button>' : '<div style="width:44px"></div>'));
   let h = '<div class="pad"><button class="btn" onclick="go(\'setup\')">Nieuwe wedstrijd</button></div>';
   const live = se.matches.filter(m=>m.status==="live"), done = se.matches.filter(m=>m.status!=="live");
@@ -640,7 +755,9 @@ function renderSetup(){
        '<button aria-pressed="'+(st.venue==="away")+'" onclick="setupSet(\'venue\',\'away\')">Uit</button></div></div>';
   h += '<div class="row"><div class="grow"><div class="t">Duur per deel</div><div class="s">minuten</div></div>'+stepper("partMin",st.partMin,5,5,60)+'</div></div>';
 
-  h += '<div class="sec">Selectie van vandaag</div><div class="card" id="squadList">';
+  h += '<div class="sec">Selectie van vandaag</div>';
+  h += '<p class="muted" style="margin-top:0">Tik een rugnummer aan om de speler te selecteren. De eerste '+st.onField+' worden basis, de rest bank. Tik op het label om dat om te draaien.</p>';
+  h += '<div class="card" id="squadList">';
   st.squad.forEach((p,i)=> h += squadRowHTML(p,i));
   h += '<div class="row" id="addRow"><input type="tel" id="newNr" inputmode="numeric" placeholder="rugnummer, dan Enter" style="text-align:left" autocomplete="off">'+
        '<button onclick="setupAdd()" style="color:var(--tint);font-weight:600;padding:8px 10px">Voeg toe</button></div></div>';
@@ -668,13 +785,14 @@ function renderSetup(){
   refreshSetupFooter();
 }
 function squadRowHTML(p,i){
+  const lbl = !p.in ? "niet geselecteerd" : (p.start ? "basis" : "bank");
+  const sty = !p.in ? "background:var(--fill);color:var(--text3)"
+            : (p.start ? "background:var(--tint-soft);color:var(--tint)" : "background:var(--bench-soft);color:var(--bench)");
   return '<div class="row" data-idx="'+i+'">'+
     '<button onclick="setupToggle('+i+')" style="flex:0 0 36px;height:36px;border-radius:10px;font-weight:700;font-size:16px;'+
       (p.in?'background:var(--tint);color:#fff':'background:var(--fill);color:var(--text2)')+'">'+esc(p.n)+'</button>'+
-    '<input type="text" value="'+esc(p.f)+'" placeholder="voornaam (optioneel)" style="text-align:left" oninput="setupName('+i+',this.value)" autocomplete="off">'+
-    '<button onclick="setupStart('+i+')" style="flex:0 0 auto;font-size:13px;font-weight:600;padding:7px 11px;border-radius:9px;'+
-      (!p.in ? 'visibility:hidden;' : (p.start?'background:var(--tint-soft);color:var(--tint)':'background:var(--fill);color:var(--text2)'))+
-      '">'+(p.start?"basis":"bank")+'</button></div>';
+    '<input type="text" value="'+esc(p.f)+'" placeholder="voornaam" style="text-align:left;min-width:40px" oninput="setupName('+i+',this.value)" autocomplete="off">'+
+    '<button onclick="setupRole('+i+')" style="flex:0 0 auto;font-size:12.5px;font-weight:600;padding:7px 9px;border-radius:9px;white-space:nowrap;'+sty+'">'+lbl+'</button></div>';
 }
 function refreshSetupFooter(){
   const st = setupState;
@@ -691,13 +809,20 @@ function stepper(k,v,step,min,max){
 }
 function setupStep(k,d,min,max){ setupState[k] = Math.min(max, Math.max(min, setupState[k]+d)); renderSetup(); }
 function setupSet(k,v){ setupState[k] = v; renderSetup(); }
-function setupToggle(i){ const p = setupState.squad[i]; p.in = !p.in; if(!p.in) p.start = false; redrawSquadRow(i); }
-function setupStart(i){
-  const st = setupState, p = st.squad[i];
-  if(!p.in){ p.in = true; }
-  const cnt = st.squad.filter(x=>x.in&&x.start).length;
-  if(!p.start && cnt >= st.onField){ toast("Al " + st.onField + " basisspelers gekozen"); return; }
-  p.start = !p.start; redrawSquadRow(i);
+function starterCount(){ return setupState.squad.filter(x=>x.in && x.start).length; }
+function autoRole(p){ p.start = starterCount() < setupState.onField; }
+function setupToggle(i){
+  const p = setupState.squad[i];
+  p.in = !p.in;
+  if(p.in) autoRole(p); else p.start = false;
+  redrawSquadRow(i);
+}
+function setupRole(i){
+  const p = setupState.squad[i];
+  if(!p.in){ p.in = true; autoRole(p); redrawSquadRow(i); return; }
+  if(!p.start && starterCount() >= setupState.onField){ toast("Al " + setupState.onField + " basisspelers gekozen"); return; }
+  p.start = !p.start;
+  redrawSquadRow(i);
 }
 function redrawSquadRow(i){
   const row = document.querySelector('#squadList .row[data-idx="'+i+'"]');
@@ -710,7 +835,9 @@ function setupAdd(){
   if(!n){ el.focus(); return; }
   if(setupState.squad.some(p=>String(p.n)===n)){ toast("Nummer " + n + " staat er al"); el.value = ""; el.focus(); return; }
   const se = season(), r = se.roster[n] || {};
-  setupState.squad.push({ n, f:r.f||"", l:r.l||"", in:true, start:false });
+  const np = { n, f:r.f||"", l:r.l||"", in:true, start:false };
+  setupState.squad.push(np);
+  autoRole(np);
   const i = setupState.squad.length - 1;
   $("#addRow").insertAdjacentHTML("beforebegin", squadRowHTML(setupState.squad[i], i));
   el.value = ""; el.focus();
@@ -735,7 +862,7 @@ function renderMatch(){
   const left = m.venue==="home" ? us : them, right = m.venue==="home" ? them : us;
   const lS = m.venue==="home" ? "us" : "them", rS = m.venue==="home" ? "them" : "us";
 
-  nav(menuBtn() + navTitle(us + " – " + them, dateNL(m.date) + " · " + (m.venue==="home"?"thuis":"uit")) +
+  nav(menuBtn() + navTitle(us + " – " + them, dateNL(m.date) + " · " + (m.venue==="home"?"thuis":"uit"), "editMatchNames()") +
       '<button class="nav-btn txt" onclick="moreSheet()">Meer</button>');
 
   let h = '<div class="score"><div class="score-top">';
@@ -784,10 +911,11 @@ function paint(){
   playersArr(m).forEach(p=>{
     if(p.status === "susp" && p.susp && T >= p.susp.until){
       const until = p.susp.until;
-      commit(m,p,until); p.status = "bench"; p.since = until; p.ready = true; p.susp = null;
-      logEv(m, p.n + " " + dispName(p) + " mag terug");
+      commit(m,p,until); p.status = "field"; p.since = until; p.ready = true; p.susp = null;
+      logEv(m, p.n + " " + dispName(p) + " straf afgelopen — terug het veld in");
       fired = p;
     }
+    if(p.ready && p.status === "field" && T - p.since > 12000) p.ready = false;
     const L = liveOf(p,T), q = s=> document.querySelector('['+s+'="'+CSS.escape(String(p.n))+'"]');
     const f = q("data-f"), b = q("data-b"), now = q("data-now"), sc = q("data-s"), gb = q("data-g");
     if(f) f.textContent = mmss(L.field);
@@ -801,11 +929,11 @@ function paint(){
     }
     const card = document.querySelector('.pl[data-p="'+CSS.escape(String(p.n))+'"]');
     if(card){
-      const want = "pl " + p.status + (p.status==="susp" && p.susp ? " c-"+p.susp.type : "");
+      const want = "pl " + p.status + (p.status==="susp" && p.susp ? " c-"+p.susp.type : "") + (p.ready && p.status==="field" ? " ready" : "");
       if(card.className !== want) card.className = want;
     }
   });
-  if(fired){ save(true); alarm(); toast("Straf afgelopen — " + fired.n + " " + dispName(fired) + " mag terug", 4200); }
+  if(fired){ save(true); alarm(); toast("Straf afgelopen — " + fired.n + " " + dispName(fired) + " staat weer op het veld", 4600); }
 
   const strip = $("#strip");
   const bench = playersArr(m).filter(p=>p.status==="bench");
@@ -836,8 +964,7 @@ function paint(){
 function playerSheet(n){
   const m = match(), p = m.players[n], T = elapsedTotal(m), L = liveOf(p,T);
   let h = '<div class="card" style="margin-bottom:14px">';
-  h += '<button class="row" onclick="nameSheet(\''+esc(p.n)+'\')"><div class="grow"><div class="t">'+esc(fullName(p) || "naam toevoegen")+'</div>'+
-       '<div class="s">tik om de naam aan te passen</div></div><span style="color:var(--tint)">'+svg.pen+'</span></button>';
+  h += '<button class="row" onclick="nameSheet(\''+esc(p.n)+'\')"><div class="grow"><div class="t">'+esc(fullName(p) || "naam toevoegen")+'</div></div><span style="color:var(--tint)">'+svg.pen+'</span></button>';
   h += '<div class="row"><div class="grow"><div class="t">Op het veld</div></div><div class="v num" style="color:var(--tint);font-weight:600">'+mmss(L.field)+'</div></div>';
   h += '<div class="row"><div class="grow"><div class="t">Op de bank</div>'+(p.status==="bench"?'<div class="s">deze beurt '+mmss(L.spell)+'</div>':'')+
        '</div><div class="v num" style="color:var(--bench);font-weight:600">'+mmss(L.bench)+'</div></div>';
@@ -867,8 +994,8 @@ function playerSheet(n){
     h += '</div>';
   } else if(p.status === "susp"){
     h += '<div class="sec">Straf — nog '+mmss(Math.max(0,p.susp.until-T))+'</div><div class="card">'+
-      '<button class="opt" onclick="backFromSusp(\''+esc(p.n)+'\',false)"><span style="flex:1">Straf beëindigen, naar de bank</span></button>'+
-      '<button class="opt" onclick="backFromSusp(\''+esc(p.n)+'\',true)"><span style="flex:1">Straf beëindigen, terug het veld in</span></button></div>';
+      '<button class="opt" onclick="backFromSusp(\''+esc(p.n)+'\',true)"><span style="flex:1">Straf beëindigen, terug het veld in</span></button>'+
+      '<button class="opt" onclick="backFromSusp(\''+esc(p.n)+'\',false)"><span style="flex:1">Straf beëindigen, naar de bank</span></button></div>';
   } else {
     h += '<div class="sec">Rode kaart</div><div class="card"><div class="row"><div class="s">Deze speler doet niet meer mee.</div></div></div>';
   }
@@ -890,7 +1017,7 @@ function nameSheet(n){
   openModal("Naam van nummer " + p.n,
     '<div class="card"><div class="row"><label class="lbl" for="nf">Voornaam</label><input type="text" id="nf" value="'+esc(p.f)+'" placeholder="Anneliese" autocomplete="off"></div>'+
     '<div class="row"><label class="lbl" for="nl">Achternaam</label><input type="text" id="nl" value="'+esc(p.l)+'" placeholder="optioneel" autocomplete="off"></div></div>'+
-    '<p class="muted">Op de spelerkaart tonen we enkel de voornaam. De naam wordt ook bewaard in het spelersbestand van dit seizoen.</p>'+
+    '<p class="muted">Op de spelerkaart staat enkel de voornaam.</p>'+
     '<div class="pad"><button class="btn" id="nGo">Bewaren</button></div>',
     { onMount(mo){
         const f = mo.querySelector("#nf"), l = mo.querySelector("#nl");
@@ -997,7 +1124,7 @@ function confirmFinish(){
 function renderSummary(){
   const m = match(), se = season();
   if(!m) return go("season");
-  nav(backBtn("season") + navTitle(se.team + " – " + (m.opponent||"?"), dateNL(m.date)) + '<div style="width:44px"></div>');
+  nav(backBtn("season") + navTitle(se.team + " – " + (m.opponent||"?"), dateNL(m.date), "editMatchNames()") + '<div style="width:44px"></div>');
   const T = m.totalMs != null ? m.totalMs : elapsedTotal(m), ps = playersArr(m);
   let h = '<div class="pad" style="text-align:center;padding-bottom:6px">'+
     '<div class="num" style="font-size:44px;font-weight:700;letter-spacing:-.03em">'+m.score.us+'–'+m.score.them+'</div>'+
