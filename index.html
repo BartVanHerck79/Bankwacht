@@ -190,6 +190,11 @@ button.row:active{background:var(--fill)}
 .dot{width:12px;height:12px;border-radius:3px;flex:0 0 auto}
 .dot.groen{background:var(--cg)} .dot.geel{background:var(--cy)} .dot.rood{background:var(--cr)}
 .ta{width:100%;height:190px;font-size:12px;border-radius:12px;border:1px solid var(--sep);background:var(--surface);color:var(--text);padding:10px}
+.updbar{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:var(--tint);color:#fff;font-size:14px;font-weight:600}
+.updbar button{margin-left:auto;background:rgba(255,255,255,.22);color:#fff;font-size:13px;
+  font-weight:700;padding:7px 13px;border-radius:9px}
+.updbar .x{background:none;margin-left:0;padding:7px 4px;opacity:.8;font-weight:400}
 .toast{position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom,0px));transform:translate(-50%,10px);
   background:rgba(28,28,30,.96);color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:80;
   opacity:0;transition:.2s;pointer-events:none;max-width:88%;text-align:center}
@@ -220,7 +225,7 @@ table.st tr:last-child td{border-bottom:0}
    Bankwacht — speeltijd en banktijd bij hockey
    Gemaakt voor Anneliese van KHC Dragons
    =========================================================== */
-const APP_VERSION = "2.4.0";
+const APP_VERSION = "2.5.0";
 const DATA_VERSION = 2;
 const KEY = "bankwacht.v1";
 
@@ -580,7 +585,9 @@ function openMenu(){
        (S.lastBackup ? "laatst op " + dateNL(S.lastBackup) : "nog nooit gemaakt")+'</div></div><span class="chev">'+svg.chev+'</span></button>';
   h += '<button class="row" onclick="about()"><div class="grow"><div class="t">Zo werkt de app</div></div><span class="chev">'+svg.chev+'</span></button>';
   h += '</div>';
-  h += '<div class="ver">Bankwacht '+APP_VERSION+' · gegevensformaat v'+DATA_VERSION+'</div>';
+  h += '<div class="card" style="margin-top:14px"><button class="row" onclick="checkForUpdate(true)">'+
+       '<div class="grow"><div class="t">Bankwacht '+APP_VERSION+'</div>'+
+       '<div class="s">tik om te controleren op een nieuwe versie</div></div></button></div>';
   openModal("Menu", h);
 }
 function about(){
@@ -1351,9 +1358,69 @@ async function keepAwake(){
 setInterval(keepAwake, 4000);
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden){ wakeLock = null; keepAwake(); } });
 
-/* offline draaien op een eigen adres */
+/* offline draaien, en zelf nagaan of er een nieuwe versie klaarstaat */
+let swReg = null, updateReady = false, reloading = false, checking = false;
+
+function showUpdateBar(){
+  if(document.getElementById("updbar")) return;
+  const bar = document.createElement("div");
+  bar.className = "updbar"; bar.id = "updbar";
+  bar.innerHTML = '<span>Nieuwe versie klaar</span>' +
+    '<button id="updGo">Vernieuwen</button>' +
+    '<button class="x" id="updX" aria-label="Later">Later</button>';
+  const app = document.getElementById("app");
+  app.insertBefore(bar, app.children[1]);
+  document.getElementById("updGo").onclick = applyUpdate;
+  document.getElementById("updX").onclick = ()=> bar.remove();
+}
+function applyUpdate(){
+  save(true);
+  if(swReg && swReg.waiting){
+    swReg.waiting.postMessage({ type:"SKIP_WAITING" });
+    setTimeout(()=>{ if(!reloading){ reloading = true; location.reload(); } }, 1200);
+  }else{
+    reloading = true; location.reload();
+  }
+}
+function watchWorker(w){
+  if(!w) return;
+  w.addEventListener("statechange", ()=>{
+    if(w.state === "installed" && navigator.serviceWorker.controller){
+      updateReady = true; showUpdateBar();
+    }
+  });
+}
+async function checkForUpdate(manual){
+  if(!swReg){ if(manual) toast("Updates werken pas als de app vanaf de website draait"); return; }
+  if(checking) return;
+  checking = true;
+  try{
+    await swReg.update();
+    setTimeout(()=>{
+      checking = false;
+      if(manual && !updateReady && !swReg.waiting) toast("Je gebruikt de nieuwste versie");
+      if(swReg.waiting){ updateReady = true; showUpdateBar(); }
+    }, 1400);
+  }catch(e){
+    checking = false;
+    if(manual) toast("Kon niet controleren — geen verbinding?");
+  }
+}
 if("serviceWorker" in navigator && location.protocol === "https:" && !/claude\.ai$/.test(location.hostname)){
-  window.addEventListener("load", ()=>{ navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+  window.addEventListener("load", async ()=>{
+    try{
+      swReg = await navigator.serviceWorker.register("sw.js");
+      if(swReg.waiting && navigator.serviceWorker.controller){ updateReady = true; showUpdateBar(); }
+      watchWorker(swReg.installing);
+      swReg.addEventListener("updatefound", ()=> watchWorker(swReg.installing));
+      navigator.serviceWorker.addEventListener("controllerchange", ()=>{
+        if(!reloading){ reloading = true; location.reload(); }
+      });
+      checkForUpdate(false);
+    }catch(e){ swReg = null; }
+  });
+  document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) checkForUpdate(false); });
+  window.addEventListener("focus", ()=> checkForUpdate(false));
 }
 
 /* ---------- start ---------- */
