@@ -220,7 +220,7 @@ table.st tr:last-child td{border-bottom:0}
    Bankwacht — speeltijd en banktijd bij hockey
    Gemaakt voor Anneliese van KHC Dragons
    =========================================================== */
-const APP_VERSION = "2.3.0";
+const APP_VERSION = "2.4.0";
 const DATA_VERSION = 2;
 const KEY = "bankwacht.v1";
 
@@ -299,6 +299,8 @@ const svg = {
   card:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="3" width="12" height="18" rx="2.2"/></svg>',
   more:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="17" height="17"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="19" height="19"><path d="M12 3.5v11"/><path d="M8.6 6.9L12 3.5l3.4 3.4"/><path d="M7 10.5H4.7v9.8h14.6v-9.8H17"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" width="19" height="19"><rect x="3.5" y="3.5" width="17" height="17" rx="4.4"/><path d="M12 8.2v7.6M8.2 12h7.6"/></svg>',
   close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" width="21" height="21"><path d="M6 6l12 12M18 6L6 18"/></svg>'
 };
 
@@ -330,6 +332,62 @@ function beeps(){
 function alarm(){
   try{ if(navigator.vibrate) navigator.vibrate([300,120,300,120,500]); }catch(e){}
   beeps();
+}
+
+/* ---------- installeren als app ---------- */
+let installPrompt = null;
+window.addEventListener("beforeinstallprompt", e=>{ e.preventDefault(); installPrompt = e; });
+window.addEventListener("appinstalled", ()=>{ installPrompt = null; toast("Bankwacht staat op je beginscherm"); });
+
+function isStandalone(){
+  try{ return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; }
+  catch(e){ return false; }
+}
+function platformKind(){
+  const ua = navigator.userAgent || "";
+  if(/iPad|iPhone|iPod/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)) return "ios";
+  if(/Android/.test(ua)) return "android";
+  return "desktop";
+}
+async function installApp(){
+  if(installPrompt){
+    try{
+      installPrompt.prompt();
+      const r = await installPrompt.userChoice;
+      installPrompt = null;
+      closeModal();
+      if(!r || r.outcome !== "accepted") toast("Installeren geannuleerd");
+      return;
+    }catch(e){ installPrompt = null; }
+  }
+  installHelp();
+}
+function installHelp(){
+  const k = platformKind();
+  let h = "";
+  if(k === "ios"){
+    h += '<p class="muted">Op een iPhone of iPad kan een website dit niet zelf doen. Het gaat wel in vier tikken:</p>';
+    h += '<div class="card">';
+    h += '<div class="row"><span class="badge num" style="flex:0 0 28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:var(--tint);color:#fff;font-weight:700;font-size:14px">1</span>'+
+         '<div class="grow"><div class="t" style="font-size:15px">Open deze pagina in Safari</div><div class="s">niet in de browser binnen WhatsApp of Mail</div></div></div>';
+    h += '<div class="row"><span class="badge num" style="flex:0 0 28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:var(--tint);color:#fff;font-weight:700;font-size:14px">2</span>'+
+         '<div class="grow"><div class="t" style="font-size:15px">Tik op het deelicoon</div><div class="s">onderaan in de balk van Safari</div></div><span style="color:var(--tint)">'+svg.share+'</span></div>';
+    h += '<div class="row"><span class="badge num" style="flex:0 0 28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:var(--tint);color:#fff;font-weight:700;font-size:14px">3</span>'+
+         '<div class="grow"><div class="t" style="font-size:15px">Kies "Zet op beginscherm"</div><div class="s">even naar beneden scrollen in die lijst</div></div><span style="color:var(--tint)">'+svg.plus+'</span></div>';
+    h += '<div class="row"><span class="badge num" style="flex:0 0 28px;height:28px;border-radius:99px;display:flex;align-items:center;justify-content:center;background:var(--tint);color:#fff;font-weight:700;font-size:14px">4</span>'+
+         '<div class="grow"><div class="t" style="font-size:15px">Tik op "Voeg toe"</div></div></div>';
+    h += '</div>';
+    h += '<p class="muted" style="margin-top:14px"><b>Belangrijk:</b> de app op je beginscherm heeft zijn eigen opslag. Wedstrijden die je hier in Safari hebt ingevoerd staan daar niet in. Maak eerst een back-up via het menu en zet die terug zodra de app geopend is.</p>';
+  } else if(k === "android"){
+    h += '<p class="muted">Je browser toont het installatievenster nu niet. Het kan ook met de hand:</p>';
+    h += '<div class="card"><div class="row"><div class="grow"><div class="t" style="font-size:15px">Open het menu van je browser</div><div class="s">de drie puntjes rechtsboven</div></div></div>'+
+         '<div class="row"><div class="grow"><div class="t" style="font-size:15px">Kies "App installeren"</div><div class="s">of "Toevoegen aan startscherm"</div></div></div></div>';
+    h += '<p class="muted" style="margin-top:14px">Lukt het niet, probeer dan Chrome. Sommige browsers ondersteunen dit niet.</p>';
+  } else {
+    h += '<p class="muted">Op een computer kan dit in Chrome en Edge: klik op het installatie-icoon rechts in de adresbalk, of open het menu en kies "Installeren". In andere browsers bestaat die mogelijkheid niet.</p>';
+  }
+  h += '<div style="height:12px"></div>';
+  openModal("Installeren als app", h);
 }
 
 /* ---------- model ---------- */
@@ -510,6 +568,14 @@ function openMenu(){
     h += '<button class="row" onclick="editRoster()"><div class="grow"><div class="t">Spelersbestand</div><div class="s">'+Object.keys(se.roster).length+' namen bewaard</div></div><span class="chev">'+svg.chev+'</span></button>';
   }
   h += '</div><div class="card">';
+  if(!isStandalone()){
+    const k = platformKind();
+    h += '<button class="row" onclick="installApp()"><div class="grow"><div class="t">Installeer als app</div><div class="s">'+
+      (installPrompt ? "in één tik op je beginscherm"
+        : k === "ios" ? "via het deelmenu van Safari, met uitleg"
+        : k === "android" ? "op je startscherm zetten"
+        : "in Chrome of Edge")+'</div></div><span class="chev">'+svg.chev+'</span></button>';
+  }
   h += '<button class="row" onclick="backupSheet()"><div class="grow"><div class="t">Back-up</div><div class="s">'+
        (S.lastBackup ? "laatst op " + dateNL(S.lastBackup) : "nog nooit gemaakt")+'</div></div><span class="chev">'+svg.chev+'</span></button>';
   h += '<button class="row" onclick="about()"><div class="grow"><div class="t">Zo werkt de app</div></div><span class="chev">'+svg.chev+'</span></button>';
