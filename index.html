@@ -225,7 +225,7 @@ table.st tr:last-child td{border-bottom:0}
    Bankwacht — speeltijd en banktijd bij hockey
    Gemaakt voor Anneliese van KHC Dragons
    =========================================================== */
-const APP_VERSION = "2.5.0";
+const APP_VERSION = "2.6.0";
 const DATA_VERSION = 2;
 const KEY = "bankwacht.v1";
 
@@ -937,7 +937,7 @@ function renderMatch(){
   const lS = m.venue==="home" ? "us" : "them", rS = m.venue==="home" ? "them" : "us";
 
   nav(menuBtn() + navTitle(us + " – " + them, dateNL(m.date) + " · " + (m.venue==="home"?"thuis":"uit"), "editMatchNames()") +
-      '<button class="nav-btn txt" onclick="moreSheet()">Meer</button>');
+      '<div style="width:44px"></div>');
 
   let h = '<div class="score"><div class="score-top">';
   h += '<button class="score-side" onclick="goalSheet(\''+lS+'\')"><div class="nm">'+esc(left)+'</div><div class="pt num" data-sc="'+lS+'">'+m.score[lS]+'</div></button>';
@@ -1168,7 +1168,10 @@ function goalSheet(side){
 }
 function moreSheet(){
   const m = match(), part = ordinalPart(m.clock.part, m.cfg.parts).toLowerCase();
-  let h = '<div class="sec">Klok bijstellen</div><div class="card">';
+  let h = '<div class="sec">Selectie</div><div class="card">';
+  h += '<button class="opt" onclick="addPlayerSheet()"><span style="flex:1">Speler toevoegen</span>'+
+       '<span style="color:var(--text2);font-size:14px">komt op de bank</span></button></div>';
+  h += '<div class="sec">Klok bijstellen</div><div class="card">';
   h += '<button class="opt" onclick="nudgeClock(60000);closeModal()"><span style="flex:1">Eén minuut bijtellen</span><span style="color:var(--text2);font-size:14px">te laat gestart</span></button>';
   h += '<button class="opt" onclick="nudgeClock(-60000);closeModal()"><span style="flex:1">Eén minuut aftrekken</span><span style="color:var(--text2);font-size:14px">te vroeg gestart</span></button>';
   h += '<button class="opt" onclick="nudgeClock(10000);closeModal()"><span style="flex:1">Tien seconden bijtellen</span></button>';
@@ -1185,6 +1188,55 @@ function moreSheet(){
   }
   h += '<div class="ver">Bankwacht '+APP_VERSION+'</div>';
   openModal("Meer", h);
+}
+function addPlayerSheet(){
+  const m = match(), se = season();
+  const known = Object.keys(se.roster).filter(n=> !m.players[n]).sort((a,b)=> (+a)-(+b));
+  let h = "";
+  if(known.length){
+    h += '<div class="sec">Uit het spelersbestand</div><div class="card">';
+    known.forEach(n=>{
+      const r = se.roster[n] || {};
+      h += '<button class="opt" onclick="addLatePlayer(\''+esc(n)+'\')"><span class="badge b num">'+esc(n)+'</span>'+
+           '<span style="flex:1">'+esc(((r.f||"")+" "+(r.l||"")).trim() || "geen naam")+'</span></button>';
+    });
+    h += '</div>';
+  }
+  h += '<div class="sec">Nieuw nummer</div><div class="card">'+
+    '<div class="row"><label class="lbl" for="apN">Rugnummer</label><input type="tel" inputmode="numeric" id="apN" autocomplete="off"></div>'+
+    '<div class="row"><label class="lbl" for="apF">Voornaam</label><input type="text" id="apF" placeholder="optioneel" autocomplete="off"></div>'+
+    '<div class="row"><label class="lbl" for="apL">Achternaam</label><input type="text" id="apL" placeholder="optioneel" autocomplete="off"></div></div>'+
+    '<p class="muted">De speler komt op de bank. De banktijd telt vanaf nu, niet vanaf de aftrap.</p>'+
+    '<div class="pad"><button class="btn" id="apGo">Toevoegen</button></div>';
+  openModal("Speler toevoegen", h, { onMount(mo){
+    const nEl = mo.querySelector("#apN"), fEl = mo.querySelector("#apF"), lEl = mo.querySelector("#apL");
+    const fire = ()=>{
+      const n = nEl.value.trim();
+      if(!n){ nEl.focus(); toast("Geef een rugnummer"); return; }
+      addLatePlayer(n, fEl.value, lEl.value);
+    };
+    mo.querySelector("#apGo").onclick = fire;
+    [nEl,fEl,lEl].forEach(el=> el.addEventListener("keydown", e=>{ if(e.key==="Enter") fire(); }));
+    nEl.addEventListener("input", ()=>{
+      const r = se.roster[nEl.value.trim()];
+      if(r){ if(!fEl.value) fEl.value = r.f||""; if(!lEl.value) lEl.value = r.l||""; }
+    });
+  }});
+}
+function addLatePlayer(n, f, l){
+  const m = match(), se = season();
+  n = String(n).trim(); if(!n) return;
+  if(m.players[n]){ toast("Nummer " + n + " speelt al mee"); return; }
+  const r = se.roster[n] || {};
+  f = String(f||"").trim() || r.f || "";
+  l = String(l||"").trim() || r.l || "";
+  const T = elapsedTotal(m);
+  m.players[n] = { n, f, l, status:"bench", fieldMs:0, benchMs:0, suspMs:0, subs:0,
+                   since:T, longestBench:0, cards:[], susp:null, ready:false, goals:0 };
+  se.roster[n] = { f, l };
+  logEv(m, n + " " + dispName(m.players[n]) + " toegevoegd aan de selectie");
+  save(true); closeModal(); renderMatch();
+  toast(n + " " + dispName(m.players[n]) + " staat op de bank");
 }
 function confirmFinish(){
   const m = match();
